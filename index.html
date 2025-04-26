@@ -497,6 +497,50 @@
         background: #006633;
         border-radius: 2px;
     }
+    .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 24px 0 0 0;
+    gap: 8px;
+}
+
+.page-arrow {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #fff;
+    color: #00693e;
+    font-size: 22px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-arrow:disabled {
+    color: #bbb;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    cursor: not-allowed;
+}
+
+.page-current {
+    width: 36px;
+    height: 36px;
+    background: #00693e;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
     </style>
 </head>
 <body>
@@ -559,6 +603,11 @@
                     </div>
                 </div>
             </div>
+            <div class="pagination">
+                <button class="page-arrow" disabled>&lt;</button>
+                <span class="page-current">1</span>
+                <button class="page-arrow" disabled>&gt;</button>
+            </div>
         </div>
     </section>
 
@@ -570,7 +619,7 @@
                 <div class="picker-item">
                     <label>场馆选择</label>
                     <select id="venueSelect">
-                        <option value="南校园健身房">南校园健身房</option>
+                        <option value="南校园新体育馆健身房">南校园新体育馆健身房</option>
                         <option value="北校园健身房">北校园健身房</option>
                         <option value="深圳校区健身房">深圳校区健身房</option>
                     </select>
@@ -588,12 +637,8 @@
                     <select id="daySelect"></select>
                 </div>
                 <div class="picker-item">
-                    <label>开始时间</label>
-                    <select id="startTimeSelect"></select>
-                </div>
-                <div class="picker-item">
-                    <label>结束时间</label>
-                    <select id="endTimeSelect"></select>
+                    <label>时间段</label>
+                    <select id="timeSlotSelect"></select>
                 </div>
             </div>
             <div class="picker-actions">
@@ -695,23 +740,27 @@
                 daySelect.appendChild(option);
             }
         }
+        const timeSlots = [
+            "12:30-14:00",
+            "14:00-16:00",
+            "16:00-18:00",
+            "18:00-20:00",
+            "20:00-22:00"
+        ];
 
-        // 时间选项（30分钟为间隔）
-        function generateTimeOptions(select) {
-            for (let hour = 6; hour <= 22; hour++) {
-                for (let minute of ['00', '30']) {
-                    const timeStr = `${hour.toString().padStart(2, '0')}:${minute}`;
-                    const option = document.createElement('option');
-                    option.value = timeStr;
-                    option.textContent = timeStr;
-                    select.appendChild(option);
-                }
-            }
-        }
+    function fillTimeSlotSelect() {
+        const select = document.getElementById('timeSlotSelect');
+        select.innerHTML = '';
+        timeSlots.forEach(slot => {
+            const option = document.createElement('option');
+            option.value = slot;
+            option.textContent = slot;
+            select.appendChild(option);
+        });
+}
 
-        generateTimeOptions(startTimeSelect);
-        generateTimeOptions(endTimeSelect);
-
+// 页面初始化或日期变更时调用
+fillTimeSlotSelect();
         // 监听年月变化更新日期
         yearSelect.addEventListener('change', updateDays);
         monthSelect.addEventListener('change', updateDays);
@@ -723,7 +772,6 @@
         const currentVenue = document.querySelector('.venue-name').textContent;
         venueSelect.value = currentVenue;
     }
-
     // 初始化日期时间选择器
     initDatetimePicker();
 
@@ -767,12 +815,11 @@
         const year = yearSelect.value;
         const month = monthSelect.value;
         const day = daySelect.value;
-        const startTime = startTimeSelect.value;
-        const endTime = endTimeSelect.value;
+        const timeSlot = document.getElementById('timeSlotSelect').value;
 
         // 格式化日期和时间
         const formattedDate = `${year}-${month}-${day}`;
-        const formattedTime = `${startTime} - ${endTime}`;
+        const formattedTime = `${timeSlot}`;
 
         // 更新预约卡片的场馆、日期和时间
         const card = document.querySelector('.reservation-card');
